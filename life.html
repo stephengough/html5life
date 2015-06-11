@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Game of Life</title>
+</head>
+<body onload="onLoad()">
+<canvas id="life" width="1400" height="780"/>
+</body>
+
+<script src = 'Life.js'></script>
+<script>
+
+var life = new Life(290,180);
+var canvas = document.getElementById('life');
+var cellW = 4;
+var cellH = 4;
+var animId;
+var tracking = false;
+
+var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+
+var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame;
+
+canvas.addEventListener('dblclick', onDblClick, false);
+canvas.addEventListener('click', onClick, false);
+canvas.addEventListener('mousedown', onMouseDown, false);
+canvas.addEventListener('mousemove', onMouseMove, false);
+canvas.addEventListener('mouseup', onMouseUp, false);
+
+function onLoad() {
+	animate();
+}
+
+function onDblClick() {
+	animate();
+}
+
+function onMouseDown(e) {
+	tracking = true;
+	cancelAnimationFrame(animId);
+	setCellUnderMouse(e);
+}
+function onMouseMove(e) {
+	if (tracking) {
+		setCellUnderMouse(e);
+	}
+}
+
+function onMouseUp() {
+	if (tracking) {
+		tracking = false;
+		animate();
+	}
+}
+
+function setCellUnderMouse(e) {
+	var pos = getCursorPosition(e);
+	var cellX = Math.floor(pos.x / cellW);
+	var cellY = Math.floor(pos.y / cellH);
+	life.set(cellX, cellY);
+	draw();
+}
+
+function animate() {
+	life.live();
+	draw();
+	animId = requestAnimationFrame(animate);
+}
+
+function draw() {
+	var ctx = canvas.getContext("2d");
+	var w = life.gridW;
+	var h = life.gridH;
+	for (var y = 0; y < h; ++y) {
+		for (var x = 0; x < w; ++x) {
+			if (life.cellChanged(x,y)) {
+				if (life.get(x,y)) {
+					ctx.fillRect(x * cellW, y * cellH, cellW, cellH);
+				}
+				else {
+					ctx.clearRect(x * cellW, y * cellH, cellW, cellH);
+				}
+			}
+		}
+	}
+}
+
+function getCursorPosition(e) {
+    var x;
+    var y;
+    if (e.pageX != undefined && e.pageY != undefined) {
+		x = e.pageX;
+		y = e.pageY;
+    }
+    else {
+		x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+		y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+    }
+	
+	x -= canvas.offsetLeft;
+    y -= canvas.offsetTop;
+	
+	return {x : x, y : y};
+}
+
+</script>
+
+</html>
